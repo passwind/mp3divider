@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"log"
 	"os/exec"
 	"strconv"
 )
@@ -52,14 +53,22 @@ func main() {
 		end := mp3parts[i+1]
 
 		// ffmpeg -i 京版小英二下课本完整音轨.mp3 -ss 00:03:24 -to 00:05:11 -acodec copy L3.mp3
-		command := "-i " + inputFile + " -ss 00:" + start + " -to 00:" + end + " -acodec copy " + outPath + "/L" + strconv.Itoa(i+1) + ".mp3"
-
-		cmd := exec.Command("/usr/local/sbin/ffmpeg", command)
+		cmd := exec.Command("/usr/local/sbin/ffmpeg",
+			"-i", inputFile,
+			"-ss", "00:"+start,
+			"-to", "00:"+end,
+			"-acodec", "copy",
+			outPath+"/L"+strconv.Itoa(i+1)+".mp3")
 		var out bytes.Buffer
 		cmd.Stdout = &out
+
+		var outErr bytes.Buffer
+		cmd.Stderr = &outErr
+
 		err := cmd.Run()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("error output: %s", outErr.String())
+			log.Fatal(err)
 		}
 		fmt.Printf("exit with : %s", out.String())
 	}
